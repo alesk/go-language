@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"io"
 )
 
 func main() {
@@ -19,15 +19,13 @@ func main() {
 			os.Exit(1)
 		}
 
-		body, err := ioutil.ReadAll(response.Body)
+		_, err = io.Copy(os.Stdout, response.Body)
 		response.Body.Close()
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading body %v\n", err)
 			os.Exit(1)
 		}
-
-		fmt.Printf("%s", body)
 	}
 
 }
