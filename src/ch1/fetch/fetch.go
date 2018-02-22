@@ -5,12 +5,19 @@ import (
 	"net/http"
 	"os"
 	"io"
+	"strings"
 )
 
 func main() {
 
 	for _, url := range os.Args[1:] {
 		fmt.Printf("Fetching %v\n", url)
+
+		// Ctrl+Shift I for quick documentation
+		if !strings.HasPrefix(url,"http://")  {
+			url = "http://" + url
+		}
+
 
 		response, err := http.Get(url)
 
