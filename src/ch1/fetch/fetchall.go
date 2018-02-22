@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
 	"io"
 	"net/http"
-	"io/ioutil"
+	"os"
+	"regexp"
+	"time"
 )
 
 func main() {
@@ -33,8 +33,32 @@ func fetch(url string, ch chan<- string) {
 		return
 	}
 
-	nbytes, err := io.Copy(ioutil.Discard, resp.Body)
+	// check if file exists
+	slug := slugify(url)
+	file_index := 1
+	filename := func() string { return fmt.Sprintf("%s_%03d.html", slug, file_index) }
+	for {
+		_, err := os.Stat(filename())
+		if os.IsNotExist(err) {
+			break
+		}
+		file_index += 1
+	}
+
+	f, err := os.Create(filename())
+	defer f.Close()
+	if err != nil {
+		ch <- fmt.Sprintf("Erro writng content for %s: %v\n", url, err)
+		return
+	}
+
+	nbytes, err := io.Copy(f, resp.Body)
 	resp.Body.Close()
 	secs := time.Since(start).Seconds()
 	ch <- fmt.Sprintf("%.2fs %7d %s", secs, nbytes, url)
+}
+
+func slugify(s string) string {
+	r := regexp.MustCompile("[^A-Za-z0-9]+")
+	return r.ReplaceAllString(s, "_")
 }
