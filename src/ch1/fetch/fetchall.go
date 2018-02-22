@@ -7,13 +7,25 @@ import (
 	"os"
 	"regexp"
 	"time"
+	"strings"
 )
+
+/*
+To fetch a long filename list, use:
+
+	curl https://moz.com/top500/domains/csv -o topsites.csv
+	cat topsites.csv | awk -F "," '{print $2}' | xargs ./fetchall
+
+*/
 
 func main() {
 	start := time.Now()
 	ch := make(chan string)
 
 	for _, url := range os.Args[1:] {
+		if !strings.HasPrefix(url, "http") {
+			url = "https://" + url
+		}
 		go fetch(url, ch)
 	}
 
@@ -36,7 +48,7 @@ func fetch(url string, ch chan<- string) {
 	// check if file exists
 	slug := slugify(url)
 	file_index := 1
-	filename := func() string { return fmt.Sprintf("%s_%03d.html", slug, file_index) }
+	filename := func() string { return fmt.Sprintf("tmp/%s_%03d.html", slug, file_index) }
 	for {
 		_, err := os.Stat(filename())
 		if os.IsNotExist(err) {
