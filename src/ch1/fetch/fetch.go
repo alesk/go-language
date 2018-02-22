@@ -33,6 +33,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error reading body %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("\n\nStatus code: %d\n", response.StatusCode)
 	}
 
 }
